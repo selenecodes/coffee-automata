@@ -1,6 +1,7 @@
 import time
+import random
 
-
+""" All states in our state machine """
 dfa = {
     0: {  # Insert Money
         'G': { "nextState": 1, "description": "Insert money" }
@@ -25,38 +26,74 @@ dfa = {
     },
 }
 
-time_per_state = {
+""" Time duration per state """
+timePerState = {
     5: 2,#20, # Making coffee takes 20 seconds
     2: 1,#10, # Adding milk and sugar 10 seconds (parallel)
     3: 1,#10, # Adding milk takes 10 seconds
     4: .5,#5 # Adding sugar takes 5 seconds
 }
 
-accepting_states = {
+""" States that are counted as an accepting state """
+acceptingStates = {
     2, # We have coffee
     3, # We have cofee with milk (and possibly sugar)
     4, # We have cofee with sugar (and possibly milk)
 }
 
+""" Function that returns an order as string based on states """
+def orderToMessage(states):
+    s = 'coffee'
+    if ('B' in states):
+        return s + ' with milk and sugar'
+    if ('M' in states):
+        return s + ' with milk'
+    if ('S' in states):
+        return s + ' with sugar'
 
-initial_state = 0
-orders = ['GBKR', 'GBKR']
+    return s
 
-# State machine
-state = initial_state
+
+""" Constants """
+initialState = 0
+possibleOrders = ['GBK', 'GMK', 'GSK', 'GK']
+
+""" Configuration """
+# Two people are initially ordering coffee with milk and sugar
+orders = ['GBK', 'GBK']
+
+# Chance everytime the machine is doing something that a person enters the queue
+chanceOfNewPerson = .1
+
+""" State machine """
+state = initialState
 for order in orders:
-    
+    # !NOTE: Convert our string to a list to fix immutability issues
+    order = list(order)
+
     for s in order:
-        current_state = dfa[state][s]
-        current_state_description = current_state['description']
-        next_state = current_state['nextState']
+        currentState = dfa[state][s]
+        currentStateDescription = currentState['description']
+        nextState = currentState['nextState']
 
-        if next_state in time_per_state:
-            print(f"{current_state_description} please wait {time_per_state[next_state]} seconds")
-            time.sleep(time_per_state[next_state])
+        # If the nextState has a time duration handle it here
+        if nextState in timePerState:
+            print(f"{currentStateDescription} please wait {timePerState[nextState]} seconds")
+            
+            # Add a person randomly
+            if (random.random() <= chanceOfNewPerson):
+                choice = random.choice(possibleOrders)
+                print(f"A person was added to the queue and bought {orderToMessage(choice)}")
+                orders.append(choice)
+
+            # Wait for the action to complete
+            time.sleep(timePerState[nextState])
         
-        if next_state == 5:
-            print(dfa[5]['R']['description'])
-            state = initial_state
+        # Check if the next state is the last state and if it is say "Thank you" and reset the state.
+        if nextState == 5:
+            print(f"{dfa[5]['R']['description']} \n")
 
-        state = next_state
+            # The machine automatically resets and the user doesn't need to press a button
+            order.append('R')
+
+        state = nextState
