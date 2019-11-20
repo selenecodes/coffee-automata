@@ -26,10 +26,10 @@ dfa = {
 }
 
 time_per_state = {
-    5: 20, # Making coffee takes 20 seconds
-    2: 10, # Adding milk and sugar 10 seconds (parallel)
-    3: 10, # Adding milk takes 10 seconds
-    4: 5 # Adding sugar takes 5 seconds
+    5: 2,#20, # Making coffee takes 20 seconds
+    2: 1,#10, # Adding milk and sugar 10 seconds (parallel)
+    3: 1,#10, # Adding milk takes 10 seconds
+    4: .5,#5 # Adding sugar takes 5 seconds
 }
 
 accepting_states = {
@@ -39,10 +39,15 @@ accepting_states = {
 }
 
 
-def accepts(transitions, initial, accepting, time_per_state, given_states):
-    state = initial
-    for s in given_states:
-        current_state = transitions[state][s]
+initial_state = 0
+orders = ['GBKR', 'GBKR']
+
+# State machine
+state = initial_state
+for order in orders:
+    
+    for s in order:
+        current_state = dfa[state][s]
         current_state_description = current_state['description']
         next_state = current_state['nextState']
 
@@ -51,10 +56,7 @@ def accepts(transitions, initial, accepting, time_per_state, given_states):
             time.sleep(time_per_state[next_state])
         
         if next_state == 5:
-            print(transitions[5]['R']['description'])
+            print(dfa[5]['R']['description'])
+            state = initial_state
 
         state = next_state
-    return state in accepting
-
-
-accepts(dfa, 0, accepting_states, time_per_state, 'GBKR')
