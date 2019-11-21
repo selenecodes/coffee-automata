@@ -28,17 +28,10 @@ dfa = {
 
 """ Time duration per state """
 timePerState = {
-    5: 2,#20, # Making coffee takes 20 seconds
-    2: 1,#10, # Adding milk and sugar 10 seconds (parallel)
-    3: 1,#10, # Adding milk takes 10 seconds
-    4: .5,#5 # Adding sugar takes 5 seconds
-}
-
-""" States that are counted as an accepting state """
-acceptingStates = {
-    2, # We have coffee
-    3, # We have cofee with milk (and possibly sugar)
-    4, # We have cofee with sugar (and possibly milk)
+    5: .20, # Making coffee takes 20 seconds
+    2: .10, # Adding milk and sugar 10 seconds (parallel)
+    3: .10, # Adding milk takes 10 seconds
+    4: .5 # Adding sugar takes 5 seconds
 }
 
 """ Function that returns an order as string based on states """
@@ -60,7 +53,7 @@ possibleOrders = ['GBK', 'GMK', 'GSK', 'GK']
 
 """ Configuration """
 # Two people are initially ordering coffee with milk and sugar
-orders = ['GBK', 'GBK']
+orders = ['GB', 'GBK']
 
 # Chance everytime the machine is doing something that a person enters the queue
 chanceOfNewPerson = .1
@@ -70,9 +63,15 @@ state = initialState
 for order in orders:
     # !NOTE: Convert our string to a list to fix immutability issues
     order = list(order)
-
+    
+    print('Creating order:')
     for s in order:
-        currentState = dfa[state][s]
+        if s in dfa[state]:
+            currentState = dfa[state][s]
+        else:
+            print(f"{s} was not found as a nextstate of state {state} \n")
+            break
+
         currentStateDescription = currentState['description']
         nextState = currentState['nextState']
 
